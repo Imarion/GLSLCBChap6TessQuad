@@ -85,15 +85,30 @@ void MyWindow::initialize()
 }
 
 void MyWindow::CreateVertexBuffer()
-{
+{    
     // Create and populate the buffer objects
 
     // Set up patch VBO
-    float v[] = {-1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f};
+    //float v[] = {-1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f};
+    float v[] = {
+                 // Top row
+                 -0.9f,    0.3667f, -0.3667f, 0.3667f, -0.3667f, 0.9f, -0.9f,    0.9f,
+                 -0.2667f, 0.3667f,  0.2667f, 0.3667f,  0.2667f, 0.9f, -0.2667f, 0.9f,
+                  0.3667f, 0.3667f,  0.9f,    0.3667f,  0.9f,    0.9f,  0.3667f, 0.9f,
+
+                 // Middle row
+                 -0.9f,    -0.2667f, -0.3667f, -0.2667f, -0.3667f, 0.2667f, -0.9f,    0.2667f,
+                 -0.2667f, -0.2667f,  0.2667f, -0.2667f,  0.2667f, 0.2667f, -0.2667f, 0.2667f,
+                  0.3667f, -0.2667f,  0.9f,    -0.2667f,  0.9f,    0.2667f,  0.3667f, 0.2667f,
+
+                 // Bottom row
+                 -0.9f,    -0.9f, -0.3667f, -0.9f, -0.3667f, -0.3667f, -0.9f,    -0.3667f,
+                 -0.2667f, -0.9f,  0.2667f, -0.9f,  0.2667f, -0.3667f, -0.2667f, -0.3667f,
+                  0.3667f, -0.9f,  0.9f,    -0.9f,  0.9f,    -0.3667f,  0.3667f, -0.3667f};
 
     glGenBuffers(1, &mVBO);
     glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), v, GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, 72 * sizeof(float), v, GL_STATIC_DRAW);
 
     // Vertex positions
     mFuncs->glBindVertexBuffer(0, mVBO, 0, sizeof(GLfloat) * 2);
@@ -132,6 +147,23 @@ void MyWindow::resizeEvent(QResizeEvent *)
 
 void MyWindow::render()
 {
+
+    float v[] = {
+                 // Top row
+                 -0.9f,    0.3667f, -0.3667f, 0.3667f, -0.3667f, 0.9f, -0.9f,    0.9f,
+                 -0.2667f, 0.3667f,  0.2667f, 0.3667f,  0.2667f, 0.9f, -0.2667f, 0.9f,
+                  0.3667f, 0.3667f,  0.9f,    0.3667f,  0.9f,    0.9f,  0.3667f, 0.9f,
+
+                 // Middle row
+                 -0.9f,    -0.2667f, -0.3667f, -0.2667f, -0.3667f, 0.2667f, -0.9f,    0.2667f,
+                 -0.2667f, -0.2667f,  0.2667f, -0.2667f,  0.2667f, 0.2667f, -0.2667f, 0.2667f,
+                  0.3667f, -0.2667f,  0.9f,    -0.2667f,  0.9f,    0.2667f,  0.3667f, 0.2667f,
+
+                 // Bottom row
+                 -0.9f,    -0.9f, -0.3667f, -0.9f, -0.3667f, -0.3667f, -0.9f,    -0.3667f,
+                 -0.2667f, -0.9f,  0.2667f, -0.9f,  0.2667f, -0.3667f, -0.2667f, -0.3667f,
+                  0.3667f, -0.9f,  0.9f,    -0.9f,  0.9f,    -0.3667f,  0.3667f, -0.3667f};
+
     if(!isVisible() || !isExposed())
         return;
 
@@ -174,8 +206,6 @@ void MyWindow::render()
 
     mProgram->bind();
     {
-        mProgram->setUniformValue("Inner", 4);
-        mProgram->setUniformValue("Outer", 4);
         mProgram->setUniformValue("LineWidth", 1.5f);
         mProgram->setUniformValue("LineColor", QVector4D(0.05f,0.0f,0.05f,1.0f));
         mProgram->setUniformValue("QuadColor", QVector4D(1.0f,1.0f,1.0f,1.0f));
@@ -183,6 +213,50 @@ void MyWindow::render()
         mProgram->setUniformValue("MVP", ProjectionMatrix * mv1);
         mProgram->setUniformValue("ViewportMatrix", ViewPortMatrix);
 
+        glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[0], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 2);
+        mProgram->setUniformValue("Outer", 2);
+        glDrawArrays(GL_PATCHES, 0, 4);
+
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[8], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 2);
+        mProgram->setUniformValue("Outer", 4);
+        glDrawArrays(GL_PATCHES, 0, 4);
+
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[16], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 2);
+        mProgram->setUniformValue("Outer", 8);
+        glDrawArrays(GL_PATCHES, 0, 4);
+
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[24], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 4);
+        mProgram->setUniformValue("Outer", 2);
+        glDrawArrays(GL_PATCHES, 0, 4);
+
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[32], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 4);
+        mProgram->setUniformValue("Outer", 4);
+        glDrawArrays(GL_PATCHES, 0, 4);
+
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[40], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 4);
+        mProgram->setUniformValue("Outer", 8);
+        glDrawArrays(GL_PATCHES, 0, 4);
+
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[48], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 8);
+        mProgram->setUniformValue("Outer", 2);
+        glDrawArrays(GL_PATCHES, 0, 4);
+
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[56], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 8);
+        mProgram->setUniformValue("Outer", 4);
+        glDrawArrays(GL_PATCHES, 0, 4);
+
+        glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), &v[64], GL_STATIC_DRAW);
+        mProgram->setUniformValue("Inner", 8);
+        mProgram->setUniformValue("Outer", 8);
         glDrawArrays(GL_PATCHES, 0, 4);
     }
     mProgram->release();
